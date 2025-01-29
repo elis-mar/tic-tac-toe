@@ -1,20 +1,22 @@
 import pygame as pg
 
+# Initialize pygame
 pg.init()
 
 # Constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-CELL_CENTER_POINTS = {(0, 0) : (SCREEN_WIDTH / 6, SCREEN_HEIGHT / 6),
-                (1, 0) : (SCREEN_WIDTH / 6, SCREEN_HEIGHT / 2),
-                (2, 0) : (SCREEN_WIDTH / 6, SCREEN_HEIGHT * (5 / 6)),
-                (0, 1) : (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 6),
-                (1, 1) : (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2),
-                (2, 1) : (SCREEN_WIDTH / 2, SCREEN_HEIGHT * (5 / 6)),
-                (0, 2) : (SCREEN_WIDTH * (5 / 6), SCREEN_HEIGHT / 6),
-                (1, 2) : (SCREEN_WIDTH * (5 / 6), SCREEN_HEIGHT / 2),
-                (2, 2) : (SCREEN_WIDTH * (5 / 6), SCREEN_HEIGHT * (5 / 6))
-                }
+CELL_CENTER_POINTS = {
+                    (0, 0) : (SCREEN_WIDTH / 6, SCREEN_HEIGHT / 6),
+                    (1, 0) : (SCREEN_WIDTH / 6, SCREEN_HEIGHT / 2),
+                    (2, 0) : (SCREEN_WIDTH / 6, SCREEN_HEIGHT * (5 / 6)),
+                    (0, 1) : (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 6),
+                    (1, 1) : (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2),
+                    (2, 1) : (SCREEN_WIDTH / 2, SCREEN_HEIGHT * (5 / 6)),
+                    (0, 2) : (SCREEN_WIDTH * (5 / 6), SCREEN_HEIGHT / 6),
+                    (1, 2) : (SCREEN_WIDTH * (5 / 6), SCREEN_HEIGHT / 2),
+                    (2, 2) : (SCREEN_WIDTH * (5 / 6), SCREEN_HEIGHT * (5 / 6))
+                    }
 
 # Colors
 WHITE = (255, 255, 255)
@@ -23,14 +25,11 @@ RED = (255, 0, 0)
 
 # Screen
 screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-screen.fill(WHITE)
 
-# Functions
-
+# Functions for drawing game elements
 def determine_what_cell_user_clicked(x: float, y: float) -> tuple[int, int]:
     cell_height = SCREEN_HEIGHT // 3
     cell_width = SCREEN_WIDTH // 3
-
     row = y // cell_height
     column = x // cell_width
     return (row, column)
@@ -49,19 +48,24 @@ def draw_board():
     pg.draw.line(screen, BLACK, (SCREEN_WIDTH // 3, 0), (SCREEN_WIDTH // 3, SCREEN_HEIGHT), 5)
     pg.draw.line(screen, BLACK, (SCREEN_WIDTH - (SCREEN_WIDTH // 3), 0), (SCREEN_WIDTH - (SCREEN_WIDTH // 3), SCREEN_HEIGHT), 5)
 
-
+# Initializations before game loop
+screen.fill(WHITE)
+draw_board() 
+player1_turn = True
+player2_turn = False
 run = True
+
+# Game loop
 while run:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             run = False
+        
+        elif event.type == pg.MOUSEBUTTONDOWN:
+            mouse_pos = event.pos
+            (row, column) = determine_what_cell_user_clicked(mouse_pos[0], mouse_pos[1])
+            draw_circle_in_the_cell_player2_clicked(row, column)
     
-    if event.type == pg.MOUSEBUTTONDOWN:
-        mouse_pos = event.pos
-        (row, column) = determine_what_cell_user_clicked(mouse_pos[0], mouse_pos[1])
-        draw_circle_in_the_cell_player2_clicked(row, column)
-    
-    draw_board() 
     pg.display.flip()
 
 pg.quit()
