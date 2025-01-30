@@ -23,22 +23,23 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
+# Global variables
+cells_marked_with_x = [[False for _ in range(3)] for _ in range(3)]
+cells_marked_with_y = [[False for _ in range(3)] for _ in range(3)]
+
 # Screen
 screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Functions for drawing game elements
-def determine_what_cell_user_clicked(x: float, y: float) -> tuple[int, int]:
-    cell_height = SCREEN_HEIGHT // 3
-    cell_width = SCREEN_WIDTH // 3
-    row = y // cell_height
-    column = x // cell_width
-    return (row, column)
-
-def draw_circle_in_the_cell_player2_clicked(row: int, column: int):
+def draw_circle_in_the_cell_clicked(row: int, column: int):
     pg.draw.circle(screen, RED, CELL_CENTER_POINTS[(row, column)], 50, 5)
 
-def draw_x_in_the_cell_player1_clicked(row: int, column: int):
-    return 0
+def draw_x_in_the_cell_clicked(row: int, column: int):
+    cell_center_pos = CELL_CENTER_POINTS[(row, column)]
+    x = cell_center_pos[0]
+    y = cell_center_pos[1]
+    pg.draw.line(screen, BLACK, (x + 35, y - 35), (x - 35, y + 35), 5)
+    pg.draw.line(screen, BLACK, (x + 35, y + 35), (x - 35, y - 35), 5)
 
 def draw_board():
     # Horizontal lines
@@ -48,11 +49,31 @@ def draw_board():
     pg.draw.line(screen, BLACK, (SCREEN_WIDTH // 3, 0), (SCREEN_WIDTH // 3, SCREEN_HEIGHT), 5)
     pg.draw.line(screen, BLACK, (SCREEN_WIDTH - (SCREEN_WIDTH // 3), 0), (SCREEN_WIDTH - (SCREEN_WIDTH // 3), SCREEN_HEIGHT), 5)
 
+# Functions for game logic
+def determine_what_cell_user_clicked(mouse_click_position: tuple[float, float]) -> tuple[int, int]:
+    x = mouse_click_position[0]
+    y = mouse_click_position[1]
+    cell_height = SCREEN_HEIGHT // 3
+    cell_width = SCREEN_WIDTH // 3
+    row = y // cell_height
+    column = x // cell_width
+    return (row, column)
+
+def check_if_cell_is_free(row: int, column: int):
+    if cells_marked_with_x[row][column] or cells_marked_with_y[row][column]:
+        return False
+    return True
+
+def mark_cell(row: int, column: int, player: int):
+    if player == 1:
+        cells_marked_with_x[row][column] = True
+    else:
+        cells_marked_with_y[row][column] = True 
+
 # Initializations before game loop
 screen.fill(WHITE)
 draw_board() 
 player1_turn = True
-player2_turn = False
 run = True
 
 # Game loop
@@ -62,10 +83,17 @@ while run:
             run = False
         
         elif event.type == pg.MOUSEBUTTONDOWN:
-            mouse_pos = event.pos
-            (row, column) = determine_what_cell_user_clicked(mouse_pos[0], mouse_pos[1])
-            draw_circle_in_the_cell_player2_clicked(row, column)
-    
+            (row, column) = determine_what_cell_user_clicked(event.pos)
+            cell_is_free = check_if_cell_is_free(row, column)
+            if player1_turn and cell_is_free:
+                draw_x_in_the_cell_clicked(row, column)
+                mark_cell(row, column, 1)
+                player1_turn = not player1_turn
+            elif cell_is_free:
+                draw_circle_in_the_cell_clicked(row, column)
+                mark_cell(row, column, 2)
+                player1_turn = not player1_turn 
+
     pg.display.flip()
 
 pg.quit()
