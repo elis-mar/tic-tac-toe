@@ -6,6 +6,8 @@ pg.init()
 # Constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+CELL_HEIGHT = SCREEN_HEIGHT // 3
+CELL_WIDTH = SCREEN_WIDTH // 3
 CELL_CENTER_POINTS = {
                     (0, 0) : (SCREEN_WIDTH / 6, SCREEN_HEIGHT / 6),
                     (1, 0) : (SCREEN_WIDTH / 6, SCREEN_HEIGHT / 2),
@@ -24,8 +26,8 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
 # Global variables
-cells_marked_with_x = [[False for _ in range(3)] for _ in range(3)]
-cells_marked_with_y = [[False for _ in range(3)] for _ in range(3)]
+player1_turn = True
+board = [[None for _ in range(3)] for _ in range(3)]
 
 # Screen
 screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -53,31 +55,76 @@ def draw_board():
 def determine_what_cell_user_clicked(mouse_click_position: tuple[float, float]) -> tuple[int, int]:
     x = mouse_click_position[0]
     y = mouse_click_position[1]
-    cell_height = SCREEN_HEIGHT // 3
-    cell_width = SCREEN_WIDTH // 3
-    row = y // cell_height
-    column = x // cell_width
+    row = y // CELL_HEIGHT
+    column = x // CELL_WIDTH
     return (row, column)
 
-def check_if_cell_is_free(row: int, column: int):
-    if cells_marked_with_x[row][column] or cells_marked_with_y[row][column]:
-        return False
-    return True
+def check_if_cell_is_free(row: int, column: int) -> bool: return board[row][column] == None
 
 def mark_cell(row: int, column: int, player: int):
     if player == 1:
-        cells_marked_with_x[row][column] = True
+        board[row][column] = 'X'
     else:
-        cells_marked_with_y[row][column] = True 
+        board[row][column] = 'O'
+
+def all_marked_x(indexes: list[tuple]) -> bool: return all(board[r][c] == 'X' for (r, c) in indexes)
+
+def all_marked_o(indexes: list[tuple]) -> bool: return all(board[r][c] == 'O' for (r, c) in indexes)
+
+def determine_if_victory_in_column() -> int:
+    for i in range(3):
+        indexes = [(0, i), (1, i), (2, i)]
+        if all_marked_x(indexes):
+            return 1
+        if all_marked_o(indexes):
+            return 2
+    return 0
+    
+def determine_if_victory_in_row() -> int:
+    for i in range(3):
+        indexes = [(i, 0), (i, 1), (i, 2)]
+        if all_marked_x(indexes):
+            return 1
+        if all_marked_o(indexes):
+            return 2
+    return 0
+
+def determine_if_victory_in_diagonal() -> int:
+    diagonals = [
+        [(i, i) for i in range(3)], 
+        [(i, 2 - i) for i in range(3)]
+    ]
+    
+    for diagonal in diagonals:
+        if all_marked_x(diagonal):
+            return 1
+        if all_marked_o(diagonal):
+            return 2
+    return 0 
+
+def determine_if_player_won():
+    for determine_winner in (determine_if_victory_in_row, determine_if_victory_in_column, determine_if_victory_in_diagonal):
+        winner = determine_winner()
+        if winner:
+            return winner
+    return 0
+
 
 # Initializations before game loop
 screen.fill(WHITE)
 draw_board() 
-player1_turn = True
 run = True
 
 # Game loop
 while run:
+
+    if determine_if_player_won():
+        screen.fill(WHITE)
+        draw_board()
+        board = [[None for _ in range(3)] for _ in range(3)]
+        player1_turn = True
+
+
     for event in pg.event.get():
         if event.type == pg.QUIT:
             run = False
