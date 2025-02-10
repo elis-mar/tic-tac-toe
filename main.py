@@ -26,7 +26,6 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
 # Global variables
-player1_turn = True
 board = [[None for _ in range(3)] for _ in range(3)]
 
 # Screen
@@ -109,27 +108,43 @@ def determine_if_player_won():
             return winner
     return 0
 
+# Functions for the computer player logic
+game_tree = {}
+
+def generate_game_tree():
+    game_states =  (((None for _ in range(3)) for _ in range(3)))
+
+    return 0
+
+def minimax():
+    return 0
+
 
 # Initializations before game loop
 screen.fill(WHITE)
-draw_board() 
+draw_board()
 run = True
+player1_turn = True
+round = 0
 
 # Game loop
 while run:
 
-    if determine_if_player_won():
-        screen.fill(WHITE)
-        draw_board()
-        board = [[None for _ in range(3)] for _ in range(3)]
-        player1_turn = True
-
+    if round > 4:
+        winner = determine_if_player_won()
+        if winner:
+            print(f'Player {winner} won')
+            run = False
+        elif round == 9:
+            print('Its a draw')
+            run = False
 
     for event in pg.event.get():
         if event.type == pg.QUIT:
             run = False
         
         elif event.type == pg.MOUSEBUTTONDOWN:
+            round += 1
             (row, column) = determine_what_cell_user_clicked(event.pos)
             cell_is_free = check_if_cell_is_free(row, column)
             if player1_turn and cell_is_free:
@@ -141,6 +156,8 @@ while run:
                 mark_cell(row, column, 2)
                 player1_turn = not player1_turn 
 
-    pg.display.flip()
+    pg.display.update()
+
+
 
 pg.quit()
