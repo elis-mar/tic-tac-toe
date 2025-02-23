@@ -23,53 +23,88 @@ CELL_CENTER_POINTS = {
                     (2, 2) : (SCREEN_WIDTH * (5 / 6), SCREEN_HEIGHT * (5 / 6))
                     }
 
-# Colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-
-# Global variables
-game_board = [['-' for _ in range(3)] for _ in range(3)]
-
 # Screen
 screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pg.display.set_caption("Tic-Tac-Toe")
 
-# Initializations before game loop
-screen.fill(WHITE)
-graphics.draw_board(screen, BLACK, SCREEN_HEIGHT, SCREEN_WIDTH)
-run = True
-player1_turn = True
-round = 0
-
-# Game loop
-while run:
-
-    if round > 4:
-        winner = game_logic.determine_if_player_won(game_board)
-        if winner:
-            print(f'Player {winner} won')
-            run = False
-        elif round == 9:
-            print('Its a draw')
-            run = False
-
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
-            run = False
-        
-        elif event.type == pg.MOUSEBUTTONDOWN:
-            round += 1
-            (row, column) = game_logic.determine_what_cell_user_clicked(event.pos, CELL_HEIGHT, CELL_WIDTH)
-            cell_is_free = game_logic.cell_is_empty(row, column, game_board)
-            if player1_turn and cell_is_free:
-                graphics.draw_x_in_the_cell_clicked(screen, BLACK, CELL_CENTER_POINTS[row, column])
-                game_logic.mark_cell(row, column, 1, game_board)
-                player1_turn = not player1_turn
-            elif cell_is_free:
-                graphics.draw_circle_in_the_cell_clicked(screen, RED, CELL_CENTER_POINTS[row, column])
-                game_logic.mark_cell(row, column, 2, game_board)
-                player1_turn = not player1_turn 
-
+# Functions for menu screens and game loop
+def main_menu() -> bool:
+    graphics.clear_screen(screen)
+    graphics.draw_main_menu(screen, SCREEN_WIDTH)
     pg.display.update()
 
-pg.quit()
+    while True:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                _, y = event.pos
+                if 250 <= y <= 300:  # Play as X
+                    return True # Player 1 turn
+                elif 350 <= y <= 400:  # Play as O
+                    return False # Player 2 turn
+
+
+def play_game(player1_turn: bool) -> int:
+    game_board = [['-' for _ in range(3)] for _ in range(3)]
+    graphics.clear_screen(screen)
+    graphics.draw_board(screen, SCREEN_HEIGHT, SCREEN_WIDTH)
+    round_count = 0
+
+    while True:
+        if round_count > 4:
+            winner = game_logic.determine_if_player_won(game_board)
+            if winner:
+                return winner
+            elif round_count == 9:
+                return 0
+
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                exit()
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                row, col = game_logic.determine_what_cell_user_clicked(event.pos, CELL_HEIGHT, CELL_WIDTH)
+                if game_logic.cell_is_empty(row, col, game_board):
+                    if player1_turn:
+                        graphics.draw_x_in_the_cell_clicked(screen, CELL_CENTER_POINTS[row, col])
+                        game_logic.mark_cell(row, col, 1, game_board)
+                    else:
+                        graphics.draw_circle_in_the_cell_clicked(screen, CELL_CENTER_POINTS[row, col])
+                        game_logic.mark_cell(row, col, 2, game_board)
+
+                    player1_turn = not player1_turn
+                    round_count += 1
+
+        pg.display.update()
+
+def play_again_screen(winner: int) -> bool:
+    graphics.clear_screen(screen)
+    graphics.draw_play_again_menu(screen, winner, SCREEN_WIDTH)
+    pg.display.update()
+
+    while True:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                exit()
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                _, y = event.pos
+                if 300 <= y <= 350:  # Clicked "Yes"
+                    return True
+                elif 400 <= y <= 450:  # Clicked "No"
+                    return False
+
+
+def main():
+    while True:
+        player1_turn = main_menu()
+        winner = play_game(player1_turn)
+
+        if not play_again_screen(winner):
+            break
+
+    pg.quit()
+
+if __name__ == "__main__":
+    main()
