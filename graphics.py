@@ -21,7 +21,7 @@ def draw_board(screen, screen_height: int, screen_width: int) -> None:
     draw.line(screen, BLACK, (screen_width // 3, 0), (screen_width // 3, screen_height), LINE_THICKNESS)
     draw.line(screen, BLACK, (screen_width - (screen_width // 3), 0), (screen_width - (screen_width // 3), screen_height), LINE_THICKNESS)
 
-def draw_play_again_menu(screen, winner: int, screen_width: int):
+def draw_play_again_menu(screen, winner: int, screen_width: int) -> None:
     screen.fill(WHITE)
     text_style = font.Font(None, 50)
 
