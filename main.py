@@ -63,8 +63,6 @@ def play_game(player: int) -> int:
 
         if not player_turn:
             _, (row, column) = computer_player.miniMax(game_board, round_count, True, -float('inf'), float('inf'), ai_player, player, (-1, -1))
-            if (row, column) == (-1, -1):
-                print('wtf')
             if ai_player == 1:
                 graphics.draw_x_in_the_cell_clicked(screen, CELL_CENTER_POINTS[row, column])
                 game_logic.mark_cell(row, column, 1, game_board)
